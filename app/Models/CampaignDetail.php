@@ -12,7 +12,12 @@ class CampaignDetail extends Model
     protected $table = 'sgo_campaign_details';
 
     protected $fillable = [
-        'campaign_id', 'user_id', 'scheduled_date', 'sent_at', 'data'
+        'campaign_id',
+        'user_id',
+        'scheduled_date',
+        'sent_at',
+        'customer_id',
+        'data'
     ];
 
     public function campaign()
@@ -23,5 +28,10 @@ class CampaignDetail extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Responses\ApiResponse;
 use App\Models\Campaign;
 use App\Models\CampaignDetail;
 use App\Models\City;
+use App\Models\Customer;
 use App\Models\OaTemplate;
 use App\Models\User;
 use App\Models\ZaloOa;
@@ -93,50 +94,51 @@ class CampaignController extends Controller
 
                 foreach (array_slice($rows, 1) as $row) {
                     if (isset($row[0]) && !empty($row[0])) {
-                        $existingUser = User::where('phone', $row[1])->first();
+                        $existingUser = Customer::where('phone', $row[1])->first();
                         $city = City::where('name', $row[4])->first();
 
                         if ($existingUser) {
+                            Log::info("Đã tìm thấy khách hàng với số điện thoại: " . $row[1]);
                             CampaignDetail::create([
                                 'campaign_id' => $campaign->id,
-                                'user_id' => $existingUser->id,
+                                'customer_id' => $existingUser->id, // Lưu customer_id từ khách hàng đã tồn tại
                                 'data' => json_encode([]),
                             ]);
                         } else {
-                            $password = '123456';
-                            $hashedPassword = Hash::make($password);
-
+                            Log::info("Không tìm thấy khách hàng với số điện thoại: " . $row[1]);
                             try {
                                 $dob = Carbon::createFromFormat('d/m/Y', $row[3])->format('Y-m-d');
                             } catch (\Exception $e) {
                                 $dob = null;
                             }
 
-                            $newUser = User::create([
+                            $newUser = Customer::create([
                                 'name' => $row[0],
                                 'phone' => $row[1],
-                                'email' => $row[2],
-                                'password' => $hashedPassword,
-                                'dob' => $dob,
-                                'status' => 'active',
-                                'role_id' => 2,
+                                'email' => $row[2] ?? null,
                                 'city_id' => $city->id ?? null,
-                                'address' => $row[5],
-                                'source' => 'Import'
+                                'address' => $row[5] ?? null,
+                                'source' => 'Import - ' . Carbon::now()->format('d/m/Y'),
+                                'user_id' => Auth::user()->id,
                             ]);
 
-                            CampaignDetail::create([
-                                'campaign_id' => $campaign->id,
-                                'user_id' => $newUser->id,
-                                'data' => json_encode([]),
-                            ]);
+                            if ($newUser) {
+                                Log::info("Tạo khách hàng mới thành công với ID: " . $newUser->id);
+                                CampaignDetail::create([
+                                    'campaign_id' => $campaign->id,
+                                    'customer_id' => $newUser->id, // Lưu customer_id từ khách hàng mới tạo
+                                    'data' => json_encode([]),
+                                ]);
+                            } else {
+                                Log::error("Tạo khách hàng mới thất bại.");
+                            }
                         }
                     }
                 }
             }
 
             session()->flash('success', 'Thêm chiến dịch thành công');
-            return redirect()->route('admin.' . Auth::user()->username . '.campaign.index');
+            return redirect()->route('admin.{username}.campaign.index', ['username' => Auth::user()->username]);
         } catch (Exception $e) {
             Log::error('Failed to create new Campaign:' . $e->getMessage());
             return ApiResponse::error('Failed to create new Campaign', 500);

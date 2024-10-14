@@ -100,6 +100,23 @@ Route::get('/employee', function () {
 })->name('employee');
 
 Route::middleware(CheckLogin::class)->prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('{username}/store')->name('{username}.store.')->group(function () {
+        Route::post('/import', [AdminStoreController::class, 'import'])->name('import');
+        Route::get('/index', [AdminStoreController::class, 'index'])->name('index');
+        Route::get('/detail/{id}', [AdminStoreController::class, 'detail'])->name('detail');
+        Route::get('/findByPhone', [AdminStoreController::class, 'findByPhone'])->name('findByPhone');
+        Route::get('/delete/{id}', [AdminStoreController::class, 'delete'])->name('delete');
+        Route::post('/store', [AdminStoreController::class, 'store'])->name('store');
+    });
+    Route::prefix('{username}/transaction')->name('{username}.transaction.')->group(function () {
+        Route::get('/update-notification/{id}', [TransactionController::class, 'updateNotification'])->name('updateNotification');
+        Route::get('', [TransactionController::class, 'index'])->name('index');
+        Route::get('search', [TransactionController::class, 'search'])->name('search');
+        Route::get('payment', [TransactionController::class, 'payment'])->name('payment');
+        Route::post('store', [TransactionController::class, 'store'])->name('store');
+        Route::get('export/{id}', [TransactionController::class, 'exportPDF'])->name('export');
+        Route::get('generateQR', [TransactionController::class, 'generateQrCode'])->name('generate');
+    });
     Route::prefix('{username}/automation')->name('{username}.automation.')->group(function () {
         Route::get('', [AutomationMarketingController::class, 'index'])->name('index');
         Route::post('/update-status', [AutomationMarketingController::class, 'updateUserStatus'])->name('updateStatus');
@@ -123,13 +140,6 @@ Route::middleware(CheckLogin::class)->prefix('admin')->name('admin.')->group(fun
         Route::post('delete', [AdminCampaignController::class, 'delete'])->name('delete');
         Route::post('update-status/', [AdminCampaignController::class, 'updateStatus'])->name('updateStatus');
     });
-    Route::prefix('{username}/store')->name('{username}.store.')->group(function () {
-        Route::get('/index', [AdminStoreController::class, 'index'])->name('index');
-        Route::get('/detail/{id}', [AdminStoreController::class, 'detail'])->name('detail');
-        Route::get('/findByPhone', [AdminStoreController::class, 'findByPhone'])->name('findByPhone');
-        Route::get('/delete/{id}', [AdminStoreController::class, 'delete'])->name('delete');
-        Route::post('/store', [AdminStoreController::class, 'store'])->name('store');
-    });
     Route::prefix('{username}/message')->name('{username}.message.')->group(function () {
         Route::get('', [AdminZnsMessageController::class, 'znsMessage'])->name('znsMessage');
         Route::get('/quota', [AdminZnsMessageController::class, 'znsQuota'])->name('znsQuota');
@@ -143,15 +153,6 @@ Route::middleware(CheckLogin::class)->prefix('admin')->name('admin.')->group(fun
         Route::get('', [AdminTransferController::class, 'index'])->name('index');
         Route::get('search', [AdminTransferController::class, 'search'])->name('search');
         Route::get('update-notification/{id}', [AdminTransferController::class, 'updateNotification'])->name('updateNotification');
-    });
-    Route::prefix('{username}/transaction')->name('{username}.transaction.')->group(function () {
-        Route::get('/update-notification/{id}', [TransactionController::class, 'updateNotification'])->name('updateNotification');
-        Route::get('', [TransactionController::class, 'index'])->name('index');
-        Route::get('search', [TransactionController::class, 'search'])->name('search');
-        Route::get('payment', [TransactionController::class, 'payment'])->name('payment');
-        Route::post('store', [TransactionController::class, 'store'])->name('store');
-        Route::get('export/{id}', [TransactionController::class, 'exportPDF'])->name('export');
-        Route::get('generateQR', [TransactionController::class, 'generateQrCode'])->name('generate');
     });
     Route::prefix('{username}/zalo')->name('{username}.zalo.')->group(function () {
         Route::get('zns', [AdminZaloController::class, 'index'])->name('zns');

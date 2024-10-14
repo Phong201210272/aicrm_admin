@@ -6,7 +6,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -84,7 +84,7 @@
                 <div class="row mt-3">
                     <div class="form-group col-12">
                         <input type="text" id="amount" class="form-control" name="amount"
-                            placeholder="Nhập tiền" />
+                            placeholder="Tối thiểu 5 triệu đồng" />
                     </div>
 
                     <div class="form-group col-12 mt-3">
@@ -204,7 +204,7 @@
                                     <label for="companyName" class="form-label">Tên công ty</label>
                                     <input type="text" value="{{ $authUser->company_name ?? '' }}"
                                         class="form-control" id="companyName" name="company_name"
-                                        placeholder="Nhập tên công ty" >
+                                        placeholder="Nhập tên công ty">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -212,7 +212,7 @@
                                     <label for="taxCode" class="form-label">Mã số thuế</label>
                                     <input type="text" value="{{ $authUser->tax_code ?? '' }}"
                                         class="form-control" id="taxCode" name="tax_code"
-                                        placeholder="Nhập mã số thuế" >
+                                        placeholder="Nhập mã số thuế">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -342,6 +342,7 @@
                         alert("Có lỗi xảy ra! Vui lòng thử lại."); // Thông báo lỗi
                     }
                 });
+
             });
 
             // Xử lý sự kiện click cho nút xác nhận trong modal QR

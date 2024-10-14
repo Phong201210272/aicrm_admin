@@ -138,10 +138,32 @@ class StoreService
             $price = AutoMationUser::first()->template->price;
             $template_id = AutomationUser::first()->template->template_id;
             $user_template_id = AutomationUser::first()->template_id;
+            $automationUserStatus = AutomationUser::first()->status;
+            if ($automationUserStatus == 1) {
+                $price = AutomationUser::first()->template->price;
 
-            if ($user->wallet >= 200) {
+                // Kiểm tra và trừ tiền từ sub_wallet trước
+                if ($user->sub_wallet >= $price) {
+                    $user->sub_wallet -= $price;
+                } elseif ($user->wallet >= $price) {
+                    // Nếu sub_wallet không đủ, trừ từ wallet nếu đủ tiền
+                    $user->wallet -= $price;
+                } else {
+                    // Nếu cả hai ví đều không đủ tiền, không gửi tin nhắn nhưng vẫn tạo bản ghi message
+                    ZnsMessage::create([
+                        'name' => $data['name'],
+                        'phone' => $data['phone'],
+                        'sent_at' => Carbon::now(),
+                        'status' => 0,
+                        'note' => 'Tài khoản của bạn không đủ tiền để thực hiện gửi tin nhắn',
+                        'oa_id' => $oa_id,
+                        'template_id' => $user_template_id,
+                    ]);
+                    return; // Dừng thực hiện gửi tin nhắn
+                }
+
                 try {
-                    //Gửi yêu cầu tới API ZALO
+                    // Gửi yêu cầu tới API ZALO
                     $client = new Client();
                     $response = $client->post('https://business.openapi.zalo.me/message/template', [
                         'headers' => [
@@ -173,29 +195,17 @@ class StoreService
                     $responseData = json_decode($responseBody, true);
                     $status = $responseData['error'] == 0 ? 1 : 0;
 
-                    if ($user->sub_wallet < 200) {
-                        $user->wallet -= $price;
-                        ZnsMessage::create([
-                            'name' => $data['name'],
-                            'phone' => $data['phone'],
-                            'sent_at' => Carbon::now(),
-                            'status' => $status,
-                            'note' => $responseData['message'],
-                            'template_id' => $user_template_id,
-                            'oa_id' => $oa_id,
-                        ]);
-                    } else {
-                        $user->sub_wallet -= $price;
-                        ZnsMessage::create([
-                            'name' => $data['name'],
-                            'phone' => $data['phone'],
-                            'sent_at' => Carbon::now(),
-                            'status' => $status,
-                            'note' => $responseData['message'],
-                            'template_id' => $user_template_id,
-                            'oa_id' => $oa_id,
-                        ]);
-                    }
+                    // Tạo bản ghi ZNS Message
+                    ZnsMessage::create([
+                        'name' => $data['name'],
+                        'phone' => $data['phone'],
+                        'sent_at' => Carbon::now(),
+                        'status' => $status,
+                        'note' => $responseData['message'],
+                        'template_id' => $user_template_id,
+                        'oa_id' => $oa_id,
+                    ]);
+
                     if ($status == 1) {
                         Log::info('Gửi ZNS thành công');
                     } else {
@@ -219,7 +229,7 @@ class StoreService
                     'phone' => $data['phone'],
                     'sent_at' => Carbon::now(),
                     'status' => 0,
-                    'note' => 'Tài khoản của bạn không đủ tiền để thực hiện gửi tin nhắn',
+                    'note' => 'Chưa kích hoạt ZNS Automation',
                     'oa_id' => $oa_id,
                     'template_id' => $user_template_id,
                 ]);

@@ -173,6 +173,9 @@
                                         </select>
                                     </div>
                                     <div class="text-center">
+                                        <a href="{{ asset('excel/sample.xlsx') }}" class="btn btn-secondary" download>
+                                            Tải file mẫu
+                                        </a>
                                         <button type="submit" class="btn btn-primary">Lưu</button>
                                     </div>
                                 </form>

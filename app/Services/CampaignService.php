@@ -6,6 +6,7 @@ use App\Jobs\SendZaloZnsJob;
 use App\Models\Campaign;
 use App\Models\CampaignDetail;
 use App\Models\City;
+use App\Models\Customer;
 use App\Models\User;
 use App\Services\ZaloOaService;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
@@ -69,7 +70,7 @@ class CampaignService
 
                 foreach (array_slice($rows, 1) as $row) {
                     if (isset($row[0]) && !empty($row[0])) {
-                        $existingUser = User::where('phone', $row[1])->first();
+                        $existingUser = Customer::where('phone', $row[1])->first();
                         $city = City::where('name', $row[4])->first();
 
                         if ($existingUser) {
@@ -81,8 +82,8 @@ class CampaignService
                             ]);
                         } else {
                             // Tạo người dùng mới nếu chưa tồn tại
-                            $password = '123456';
-                            $hashedPassword = Hash::make($password);
+                            // $password = '123456';
+                            // $hashedPassword = Hash::make($password);
 
                             try {
                                 $dob = Carbon::createFromFormat('d/m/Y', $row[3])->format('Y-m-d');
@@ -90,22 +91,19 @@ class CampaignService
                                 $dob = null; // Xử lý ngày sinh không hợp lệ
                             }
 
-                            $newUser = User::create([
+                            $newUser = Customer::create([
                                 'name' => $row[0],
                                 'phone' => $row[1],
-                                'email' => $row[2],
-                                'password' => $hashedPassword,
-                                'dob' => $dob,
-                                'status' => 'active',
-                                'role_id' => 1,
+                                'email' => $row[2] ?? null,
                                 'city_id' => $city->id ?? null,
-                                'address' => $row[5],
+                                'address' => $row[5] ?? null,
+                                'source'  => 'Import - ' . Carbon::now()->format('d/m/Y'),
                             ]);
 
                             // Tạo chi tiết chiến dịch cho người dùng mới
                             CampaignDetail::create([
                                 'campaign_id' => $campaign->id,
-                                'user_id' => $newUser->id,
+                                'customer_id' => $newUser->id,
                                 'data' => json_encode([]),
                             ]);
                         }

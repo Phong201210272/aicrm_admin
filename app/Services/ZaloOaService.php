@@ -34,7 +34,7 @@ class ZaloOaService
         try {
             $zaloOa = $this->zaloOa->create([
                 'name' => $data['name'],
-                'acccess_token' => $data['access_token'],
+                'access_token' => $data['access_token'],
                 'oa_id' => $data['oa_id'],
                 'refresh_token' => $data['refresh_token'],
                 'is_active' => 0,
@@ -95,7 +95,7 @@ class ZaloOaService
                 ],
                 'form_params' => [
                     'grant_type' => 'refresh_token',
-                    'refresh_token' => 'Yiq1ViOZ60YBp0Puoo8R3ul03NhFENjepzu5OjSaU7lvmmrIndrkADERTY_n3YjU_EbiSyyBAMFjcZyJhnTK28AX2pwC3dS_ZQiA1eeBKN2GcWnfh2T2GfwVAcxT7Z1tv9vxJgGx44kgYdTNgIGf8RkQTLA3AWLJcvXaMTW12YsQc7yhspXcD_Ua01pQ8rK5zgSKAyKlOHtUl04lwrCM0SdNRYhBTHH4Xi1tRhz2FnZosJrhurTzQ_lZ0M_U11uVtfvf7Tnn2mtmz6iviqm-JRRBHbIWGpvyew0dJBmnIq6_tnDmXpnrOvNUObMpE2HSaBeuHOuOTcUIYXCLqnWCOiEPQaR6OmjFr_ngPlHQCqlFsrvItLWUOU2xO1Aj9tSblO4MEOuIOqkohGjbyHXWQd5qroz3oZGV10',
+                    'refresh_token' => $refreshToken,
                     'app_id' => $appId,
                 ]
             ]);

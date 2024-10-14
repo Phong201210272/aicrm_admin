@@ -4,24 +4,39 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
+use App\Models\AutomationUser;
+use App\Models\City;
+use App\Models\Customer;
+use App\Models\ZaloOa;
+use App\Models\ZnsMessage;
 use App\Services\SignUpService;
 use App\Services\StoreService;
 use App\Services\UserService;
+use App\Services\ZaloOaService;
+use Carbon\Carbon;
 use Exception;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Concerns\ToArray;
+use Maatwebsite\Excel\Excel;
+use Maatwebsite\Excel\Facades\Excel as FacadesExcel;
 
 class StoreController extends Controller
 {
     protected $storeService;
     protected $signUpService;
-    public function __construct(StoreService $storeService, SignUpService $signUpService)
+    protected $zaloOaService;
+    public function __construct(StoreService $storeService, SignUpService $signUpService, ZaloOaService $zaloOaService)
     {
         $this->storeService = $storeService;
         $this->signUpService = $signUpService;
+        $this->zaloOaService = $zaloOaService;
     }
 
     public function index()
@@ -32,6 +47,165 @@ class StoreController extends Controller
         } catch (Exception $e) {
             Log::error('Failed to find any store' . $e->getMessage());
             return ApiResponse::error('Failed to find any store', 500);
+        }
+    }
+
+    public function import(Request $request)
+    {
+        try {
+            $filePath = $request->file('import_file')->getRealPath();
+
+            $fileExtension = $request->file('import_file')->getClientOriginalExtension();
+            $fileType = $fileExtension === 'xlsx' ? Excel::XLSX : Excel::XLS;
+            $user = Auth::user();
+
+            $rows = FacadesExcel::toArray(new class implements ToArray
+            {
+                public function array(array $array)
+                {
+                    return $array;
+                }
+            }, $filePath, null, $fileType)[0];
+
+            foreach (array_slice($rows, 1) as $row) {
+                if (isset($row[0]) && !empty($row[0])) {
+                    $existingUser = Customer::where('phone', $row[1])->first();
+                    $city = City::where('name', $row[4])->first();
+
+                    if (!$existingUser) {
+                        try {
+                            $dob = Carbon::createFromFormat('d/m/Y', $row[3])->format('Y-m-d');
+                        } catch (Exception $e) {
+                            $dob = null;
+                        }
+
+                        $newUser = Customer::create([
+                            'name' => $row[0],
+                            'phone' => $row[1],
+                            'email' => $row[2] ?? null,
+                            'city_id' => $city->id ?? null,
+                            'address' => $row[5] ?? null,
+                            'source' => $request->source,
+                            'user_id' => Auth::user()->id,
+                        ]);
+                        if ($newUser) {
+
+                            $accessToken = $this->zaloOaService->getAccessToken();
+                            $oa_id = ZaloOa::where('is_active', 1)->first()->id;
+                            $price = AutomationUser::first()->template->price;
+                            $template_id = AutomationUser::first()->template->template_id;
+                            $user_template_id = AutomationUser::first()->template_id;
+                            $automationUserStatus = AutomationUser::first()->status;
+
+                            if ($automationUserStatus == 1) {
+                                $price = AutomationUser::first()->template->price;
+
+                                if ($user->sub_wallet >= $price) {
+                                    // Nếu sub_wallet đủ tiền, trừ sub_wallet
+                                    $user->sub_wallet -= $price;
+                                } elseif ($user->wallet >= $price) {
+                                    // Nếu sub_wallet không đủ, kiểm tra wallet, trừ wallet nếu đủ tiền
+                                    $user->wallet -= $price;
+                                } else {
+                                    // Nếu cả 2 ví đều không đủ tiền, không gửi tin nhắn nhưng vẫn tạo bản ghi message
+                                    ZnsMessage::create([
+                                        'name' => $newUser->name,
+                                        'phone' => $newUser->phone,
+                                        'sent_at' => Carbon::now(),
+                                        'status' => 0,
+                                        'note' => 'Tài khoản của bạn không đủ tiền để thực hiện gửi tin nhắn',
+                                        'oa_id' => $oa_id,
+                                        'template_id' => $user_template_id,
+                                    ]);
+                                    continue; // Bỏ qua phần gửi tin nhắn
+                                }
+
+                                try {
+                                    // Gửi yêu cầu tới API ZALO
+                                    $client = new Client();
+                                    $response = $client->post('https://business.openapi.zalo.me/message/template', [
+                                        'headers' => [
+                                            'access_token' => $accessToken,
+                                            'Content-Type' => 'application/json'
+                                        ],
+                                        'json' => [
+                                            'phone' => preg_replace('/^0/', '84', $newUser->phone),
+                                            'template_id' => $template_id,
+                                            'template_data' => [
+                                                'date' => Carbon::now()->format('d/m/Y') ?? "",
+                                                'name' => $newUser->name ?? "",
+                                                'order_code' => $newUser->id,
+                                                'phone_number' => $newUser->phone,
+                                                'status' => 'Đăng ký thành công',
+                                                'payment_status' => 'Thành công',
+                                                'customer_name' => $newUser->name,
+                                                'phone' => $newUser->phone,
+                                                'price' => $price,
+                                                'payment' => $request->source,
+                                                'custom_field' => $newUser->address,
+                                            ]
+                                        ]
+                                    ]);
+
+                                    $responseBody = $response->getBody()->getContents();
+                                    Log::info('Api Response: ' . $responseBody);
+
+                                    $responseData = json_decode($responseBody, true);
+                                    $status = $responseData['error'] == 0 ? 1 : 0;
+
+                                    // Lưu thông tin ZNS đã gửi
+                                    ZnsMessage::create([
+                                        'name' => $newUser->name,
+                                        'phone' => $newUser->phone,
+                                        'sent_at' => Carbon::now(),
+                                        'status' => $status,
+                                        'note' => $responseData['message'],
+                                        'template_id' => $user_template_id,
+                                        'oa_id' => $oa_id,
+                                    ]);
+
+                                    if ($status == 1) {
+                                        Log::info('Gửi ZNS thành công');
+                                    } else {
+                                        Log::error('Gửi ZNS thất bại: ' . $response->getBody());
+                                    }
+                                } catch (Exception $e) {
+                                    Log::error('Lỗi khi gửi tin nhắn: ' . $e->getMessage());
+                                    ZnsMessage::create([
+                                        'name' => $newUser->name,
+                                        'phone' => $newUser->phone,
+                                        'sent_at' => Carbon::now(),
+                                        'status' => 0,
+                                        'note' => $e->getMessage(),
+                                        'oa_id' => $oa_id,
+                                    ]);
+                                }
+                            } else {
+                                ZnsMessage::create([
+                                    'name' => $newUser->name,
+                                    'phone' => $newUser->phone,
+                                    'sent_at' => Carbon::now(),
+                                    'status' => 0,
+                                    'note' => 'Chưa kích hoạt ZNS Automation',
+                                    'oa_id' => $oa_id,
+                                    'template_id' => $user_template_id,
+                                ]);
+                            }
+                        }
+                    }
+                    $user->save();
+                }
+            }
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Import khách hàng thành công'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'errors' => $e->errors()], 422);
+        } catch (Exception $e) {
+            Log::error('Có lỗi trong quá trình import khách hàng: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to add new Customers'], 500);
         }
     }
     public function findByPhone(Request $request)
@@ -79,8 +253,8 @@ class StoreController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required',
-                'phone' => 'required',
-                'email' => 'nullable|email',
+                'phone' => 'required|unique:sgo_customers,phone',
+                'email' => 'nullable|email|unique:sgo_customers,email',
                 'address' => 'required',
                 'source' => 'nullable',
             ]);
