@@ -8,8 +8,9 @@ use App\Models\ZaloOa;
 use App\Models\ZnsMessage;
 use Aws\Token\Token;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class DashBoardController extends Controller
+class DashboardController extends Controller
 {
     public function default()
     {
@@ -21,16 +22,15 @@ class DashBoardController extends Controller
         $title = 'Dashboard';
         // $toleprice = Transaction::sum('amount');
 
-        $toleprice = ZnsMessage::where('status', 1)
+        $toleprice = ZnsMessage::where('user_id', Auth::user()->id)->where('status', 1)
             ->with('template')
             ->get()
             ->sum(function ($message) {
                 return $message->template ? $message->template->price : 0;
             });
-
-        $success = ZnsMessage::where('status', 1)->count();
-        $fail = ZnsMessage::where('status', 0)->count();
-        $oa = ZaloOa::count();
+        $success = ZnsMessage::where('user_id', Auth::user()->id)->where('status', 1)->count();
+        $fail = ZnsMessage::where('user_id', Auth::user()->id)->where('status', 0)->count();
+        $oa = ZaloOa::where('user_id', Auth::user()->id)->count();
         return view("admin.dashboard.index", compact('title', 'toleprice', 'success', 'fail', 'oa'));
     }
 }

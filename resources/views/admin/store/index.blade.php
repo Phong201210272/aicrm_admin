@@ -202,6 +202,7 @@
                                                     <th>Tên</th>
                                                     <th>Điện thoại</th>
                                                     <th>Thời gian</th>
+                                                    <th>Danh mục</th>
                                                     <th>Nguồn</th>
                                                     <th>Chiến dịch</th>
                                                     <th style="text-align: center">Hành động</th>
@@ -220,6 +221,7 @@
                                                                 <td>{{ $value->phone ?? '' }}</td>
                                                                 <td>{{ $value->created_at ? $value->created_at->format('d/m/Y') : '' }}
                                                                 </td>
+                                                                <td>{{ $value->product->name ?? ''}}</td>
                                                                 <td>{{ $value->source ?? 'Thêm thủ công' }}</td>
                                                                 <td>
                                                                     {{-- Accordion for campaigns --}}

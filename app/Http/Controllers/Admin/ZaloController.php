@@ -24,7 +24,7 @@ class ZaloController extends Controller
     }
     public function index()
     {
-        $connectedApps = ZaloOa::all();
+        $connectedApps = ZaloOa::where('user_id', Auth::user()->id)->get();
 
         return view('admin.zalo.oa', compact('connectedApps'));
     }
@@ -64,7 +64,7 @@ class ZaloController extends Controller
         try {
             // dd(request()->oaId);
             // Vô hiệu hóa tất cả các OA khác
-            ZaloOa::query()->update(['is_active' => 0]);
+            ZaloOa::where('user_id', Auth::user()->id)->update(['is_active' => 0]);
 
             // Kích hoạt OA được chọn
             $activeOa = ZaloOa::where('oa_id', request()->oaId)->first();
@@ -166,7 +166,7 @@ class ZaloController extends Controller
 
     public function getActiveOaName()
     {
-        $activeOa = ZaloOa::where('is_active', 1)->first();
+        $activeOa = ZaloOa::where('user_id', Auth::user()->id)->where('is_active', 1)->first();
 
         if ($activeOa) {
             return response()->json(['active_oa_name' => $activeOa->name]);

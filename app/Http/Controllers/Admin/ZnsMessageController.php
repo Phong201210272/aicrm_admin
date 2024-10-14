@@ -10,6 +10,7 @@ use App\Services\OaTemplateService;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -29,6 +30,7 @@ class ZnsMessageController extends Controller
 
         // Lấy tất cả các tin nhắn từ các OA đang hoạt động
         $messages = ZnsMessage::whereIn('oa_id', $activeOas)
+            ->where('user_id', Auth::user()->id)
             ->orderByDesc('sent_at')
             ->get();
         // dd($messages);
@@ -234,6 +236,7 @@ class ZnsMessageController extends Controller
 
         // Lấy tất cả các tin nhắn từ các OA đang hoạt động
         $messages = ZnsMessage::whereIn('oa_id', $activeOas)
+            ->where('user_id', Auth::user()->id)
             ->where('status', $id)
             ->orderByDesc('sent_at')
             ->get();

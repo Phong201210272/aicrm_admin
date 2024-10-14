@@ -24,11 +24,9 @@
         <div class="container-fluid">
             <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
 
-                <li class="nav-item topbar-user dropdown hidden-caret">
-                    <a href="javascript:void(0)" id="open-add-modal"
-                        style="background-color: white; border-color: white">
-                        <i style="font-size: 18px; padding: 0px 5px; color: rgb(138, 135, 135)"
-                            class="fa-solid fa-plus"></i> Thêm khách hàng
+                <li class="nav-item topbar-user dropdown hidden-caret show-on-mobile">
+                    <a href="javascript:void(0)" id="open-add-modal">
+                        <i class="fa-solid fa-plus"></i> Thêm khách hàng
                     </a>
                 </li>
 
@@ -163,49 +161,28 @@
                         </span>
                     </a>
                     <ul class="dropdown-menu dropdown-user animated fadeIn">
-                        <div class="scroll-wrapper dropdown-user-scroll scrollbar-outer" style="position: relative;">
-                            <div class="dropdown-user-scroll scrollbar-outer scroll-content"
-                                style="height: auto; margin-bottom: 0px; margin-right: 0px; max-height: 0px;">
-                                <li>
-                                    <div class="user-box">
-                                        <div class="avatar-lg">
-                                            <img src="{{ isset(session('authUser')->user_info->img_url) && !empty(session('authUser')->user_info->img_url) ? asset(session('authUser')->user_info->img_url) : asset('images/avatar2.jpg') }}"
-                                                alt="image profile" class="avatar-img rounded-circle">
-                                        </div>
-                                        <div class="u-text">
-                                            <h4>{{ session('authUser')->name }}</h4>
-                                            <p class="text-muted">{{ session('authUser')->email }}</p>
-                                            <a href="{{ route('admin.{username}.detail', ['username' => Auth::user()->username, 'id' => session('authUser')->id]) }}"
-                                                class="btn btn-xs btn-secondary btn-sm">Trang cá nhân</a>
-                                            <a href="#" class="btn btn-xs  btn-sm"
-                                                style="background: red; color: #ffff"
-                                                onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">Đăng
-                                                xuất</a>
-                                            <form id="logoutForm"
-                                                action="{{ route('admin.{username}.logout', ['username' => Auth::user()->username]) }}"
-                                                method="POST" style="display: none;">
-                                                @csrf
-                                            </form>
-                                        </div>
-                                    </div>
-                                </li>
-
-                            </div>
-                            <div class="scroll-element scroll-x">
-                                <div class="scroll-element_outer">
-                                    <div class="scroll-element_size"></div>
-                                    <div class="scroll-element_track"></div>
-                                    <div class="scroll-bar"></div>
+                        <li>
+                            <div class="user-box">
+                                <div class="avatar-lg">
+                                    <img src="{{ isset(session('authUser')->user_info->img_url) && !empty(session('authUser')->user_info->img_url) ? asset(session('authUser')->user_info->img_url) : asset('images/avatar2.jpg') }}"
+                                        alt="image profile" class="avatar-img rounded-circle">
+                                </div>
+                                <div class="u-text">
+                                    <h4>{{ session('authUser')->name }}</h4>
+                                    <p class="text-muted">{{ session('authUser')->email }}</p>
+                                    <a href="{{ route('admin.{username}.detail', ['username' => Auth::user()->username, 'id' => session('authUser')->id]) }}"
+                                        class="btn btn-xs btn-secondary btn-sm">Trang cá nhân</a>
+                                    <a href="#" class="btn btn-xs  btn-sm"
+                                        style="background: red; color: #ffff"
+                                        onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">Đăng
+                                        xuất</a>
+                                    <form id="logoutForm" action="{{ route('admin.logout') }}" method="POST"
+                                        style="display: none;">
+                                        @csrf
+                                    </form>
                                 </div>
                             </div>
-                            <div class="scroll-element scroll-y">
-                                <div class="scroll-element_outer">
-                                    <div class="scroll-element_size"></div>
-                                    <div class="scroll-element_track"></div>
-                                    <div class="scroll-bar"></div>
-                                </div>
-                            </div>
-                        </div>
+                        </li>
                     </ul>
                 </li>
             </ul>
@@ -239,18 +216,28 @@
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="email" class="form-control" id="email" name="email">
                         <div class="invalid-feedback" id="email-error"></div>
                     </div>
                     <div class="form-group">
                         <label for="address">Địa chỉ</label>
-                        <input type="text" class="form-control" id="address" name="address" required>
+                        <input type="text" class="form-control" id="address" name="address">
                         <div class="invalid-feedback" id="address-error"></div>
                     </div>
                     <div class="form-group">
                         <label for="address">Nguồn</label>
                         <input type="text" class="form-control" id="source" name="source">
                         <div class="invalid-feedback" id="address-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="product_id">Chọn sản phẩm</label>
+                        <select class="form-control" id="product_id" name="product_id" required>
+                            <option value="">Chọn sản phẩm</option>
+                            @foreach ($products as $product)
+                                <option value="{{ $product->id }}">{{ $product->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback" id="product_id-error"></div>
                     </div>
                     <button type="submit" class="btn btn-primary">Thêm khách hàng</button>
                 </form>

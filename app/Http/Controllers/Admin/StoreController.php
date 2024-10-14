@@ -116,6 +116,7 @@ class StoreController extends Controller
                                         'note' => 'Tài khoản của bạn không đủ tiền để thực hiện gửi tin nhắn',
                                         'oa_id' => $oa_id,
                                         'template_id' => $user_template_id,
+                                        'user_id' => $user->id,
                                     ]);
                                     continue; // Bỏ qua phần gửi tin nhắn
                                 }
@@ -162,6 +163,7 @@ class StoreController extends Controller
                                         'note' => $responseData['message'],
                                         'template_id' => $user_template_id,
                                         'oa_id' => $oa_id,
+                                        'user_id' => $user->id,
                                     ]);
 
                                     if ($status == 1) {
@@ -178,6 +180,7 @@ class StoreController extends Controller
                                         'status' => 0,
                                         'note' => $e->getMessage(),
                                         'oa_id' => $oa_id,
+                                        'user_id' => $user->id,
                                     ]);
                                 }
                             } else {
@@ -189,6 +192,7 @@ class StoreController extends Controller
                                     'note' => 'Chưa kích hoạt ZNS Automation',
                                     'oa_id' => $oa_id,
                                     'template_id' => $user_template_id,
+                                    'user_id' => $user->id,
                                 ]);
                             }
                         }
@@ -251,14 +255,20 @@ class StoreController extends Controller
     public function store(Request $request)
     {
         try {
+            Log::info('Start validation for adding new client');
+
             $validated = $request->validate([
                 'name' => 'required',
                 'phone' => 'required|unique:sgo_customers,phone',
                 'email' => 'nullable|email|unique:sgo_customers,email',
-                'address' => 'required',
+                'address' => 'nullable',
                 'source' => 'nullable',
+                'product_id' => 'nullable|exists:sgo_products,id', // Kiểm tra product_id
             ]);
-            // dd($request->user_id);
+
+            Log::info('Validation passed', $validated);
+
+            // Tiến hành thêm khách hàng mới
             $client = $this->storeService->addNewStore($validated);
 
             return response()->json([
@@ -266,12 +276,13 @@ class StoreController extends Controller
                 'message' => 'Client added successfully',
             ]);
         } catch (ValidationException $e) {
+            Log::error('Validation error: ' . json_encode($e->errors()));
+
             return response()->json([
                 'success' => false,
                 'errors' => $e->errors(),  // Trả về lỗi validation chi tiết
             ], 422);
         } catch (Exception $e) {
-            // Log lỗi để dễ kiểm tra trong log file
             Log::error('Error occurred while adding client: ' . $e->getMessage());
 
             return response()->json([

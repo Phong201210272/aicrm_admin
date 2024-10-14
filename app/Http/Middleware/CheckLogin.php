@@ -18,7 +18,7 @@ class CheckLogin
     {
         if (!session('authUser')) {
             // Nếu session chưa được đặt, chuyển hướng người dùng đến trang login
-            return redirect()->route('formlogin');
+            return redirect()->route('default');
         }
         return $next($request);
     }

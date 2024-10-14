@@ -168,8 +168,9 @@
                         <h4 class="card-title text-center" style="color:white">Thông tin Admin</h4>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('admin.update', ['id' => $admin->id]) }}" method="POST"
-                            enctype="multipart/form-data">
+                        <form
+                            action="{{ route('admin.{username}.update', ['username' => Auth::user()->username, 'id' => $admin->id]) }}"
+                            method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="row">
                                 <!-- First Column -->
@@ -269,7 +270,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="changePasswordForm" action="{{ route('admin.changePassword') }}" method="POST">
+                    <form id="changePasswordForm"
+                        action="{{ route('admin.{username}.changePassword', ['username' => Auth::user()->username]) }}"
+                        method="POST">
                         @csrf
                         <div class="form-group">
                             <label for="current-password" class="form-label">Mật khẩu hiện tại</label>

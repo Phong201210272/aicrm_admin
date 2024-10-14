@@ -32,6 +32,62 @@
     <title>Hệ thống gửi tin nhắn tự động Zalo ZNS by SGO Việt Nam | AICRM</title>
 </head>
 <style>
+    /* Đặt cấu trúc cơ bản cho header */
+    .main-header {
+        width: 100%;
+        background-color: #fff;
+        /* Hoặc màu bạn muốn */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        /* Đổ bóng nhẹ */
+        position: relative;
+        /* Đảm bảo header không bị mất khi cuộn */
+        z-index: 1000;
+        /* Đặt z-index cao để nó luôn hiển thị trên cùng */
+    }
+
+    /* Đảm bảo rằng logo và các nút trong header không bị ẩn */
+    .logo-header,
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        /* Thêm padding cho header */
+    }
+
+    /* Định dạng cho navbar */
+    .navbar-nav {
+        flex-direction: row;
+        /* Đảm bảo các mục trong navbar xếp theo hàng */
+    }
+
+    .nav-item {
+        display: block !important;
+        /* Đảm bảo nó hiển thị */
+        width: 100%;
+        /* Chiếm toàn bộ chiều rộng */
+    }
+
+    /* Media query cho màn hình nhỏ */
+    /* @media (max-width: 768px) {
+        .navbar-nav {
+            flex-direction: column !important;
+            /* Đảm bảo các mục trong navbar xếp theo hàng */
+        }
+
+        .show-on-mobile {
+            display: block !important;
+            /* Đảm bảo hiển thị trên di động */
+        }
+
+        /* Đảm bảo các nút không bị ẩn */
+        .nav-item {
+            display: block !important;
+            width: 100%;
+            /* Đảm bảo chiếm toàn bộ chiều rộng */
+        }
+    } */
+
     .collapse {
         display: none;
     }

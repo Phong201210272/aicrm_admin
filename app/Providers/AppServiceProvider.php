@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Http\View\Composers\NotificationComposer;
+use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\Transfer;
 use Carbon\Carbon;
@@ -25,6 +26,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::composer('admin.layout.header', function ($view) {
+            if (Auth::check()) {
+                $id = Auth::id();
+                $products = Product::where('user_id', $id)->orderByDesc('created_at')->get();
+                $view->with('products', $products);
+            }
+        });
         // Composer cho admin layout
         View::composer('admin.layout.header', function ($view) {
             if (Auth::check()) {

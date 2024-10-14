@@ -25,7 +25,7 @@ class AdminController extends Controller
     {
         $title = 'Thông tin người dùng';
         try {
-            $admin = $this->adminService->getUserById($id);
+            $admin = $this->adminService->getUserById(Auth::user()->id);
             return view('admin.admin.edit', compact('admin', 'title'));
         } catch (Exception $e) {
             Log::error('Failed to fetch info: ' . $e->getMessage());
@@ -42,7 +42,7 @@ class AdminController extends Controller
             $authUser = session('authUser');
             $authUser->name = $admin->name;
             $authUser->email = $admin->email;
-            if($request->input('img_url')){
+            if ($request->input('img_url')) {
                 $authUser->user_info->img_url = $admin->user_info->img_url;
             }
             session(['authUser' => $authUser]);

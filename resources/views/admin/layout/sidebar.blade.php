@@ -80,6 +80,12 @@
                     </a>
                     <div class="collapse" id="sidebarcauhinh">
                         <ul class="nav nav-collapse">
+                            <li class="nav-item">
+                                <a
+                                    href="{{ route('admin.{username}.product.index', ['username' => Auth::user()->username]) }}">
+                                    <span class="sub-item">Danh mục</p>
+                                </a>
+                            </li>
                             <li>
                                 <a
                                     href = "{{ route('admin.{username}.zalo.zns', ['username' => Auth::user()->username]) }}">
