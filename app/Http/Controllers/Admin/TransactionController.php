@@ -93,7 +93,7 @@ class TransactionController extends Controller
         }
 
         Session::flash('action', 'Thanh toán thành công');
-        return redirect()->route('admin.transaction.index');
+        return redirect()->route('admin.{username}.transaction.index', ['username' => Auth::user()->username]);
     }
 
 
@@ -128,12 +128,12 @@ class TransactionController extends Controller
     public function updateNotification($id)
     {
         try {
-            $transaction = Transaction::find($id);
+            $transaction = Transaction::find(request()->id);
             $transaction->notification = 3;
             $transaction->save();
             return to_route('admin.transaction.index');
         } catch (Exception $e) {
-            Log::erro('failed to update mark-as-read this transaction: ' . $e->getMessage());
+            Log::error('failed to update mark-as-read this transaction: ' . $e->getMessage());
             return ApiResponse::error('Failed to mark-as-read this transaction', 500);
         }
     }

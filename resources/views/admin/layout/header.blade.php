@@ -57,91 +57,6 @@
                     </a>
                 </li>
                 <li class="nav-item topbar-icon dropdown hidden-caret">
-                    <a class="nav-link dropdown-toggle" href="#" id="messageDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fa fa-envelope"></i>
-                    </a>
-                    <ul class="dropdown-menu messages-notif-box animated fadeIn" aria-labelledby="messageDropdown">
-                        <li>
-                            <div class="dropdown-title d-flex justify-content-between align-items-center">
-                                Messages
-                                <a href="#" class="small">Mark all as read</a>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="scroll-wrapper message-notif-scroll scrollbar-outer"
-                                style="position: relative;">
-                                <div class="message-notif-scroll scrollbar-outer scroll-content"
-                                    style="height: auto; margin-bottom: 0px; margin-right: 0px; max-height: 0px;">
-                                    <div class="notif-center">
-                                        <a href="#">
-                                            <div class="notif-img">
-                                                <img src="../assets/img/jm_denis.jpg" alt="Img Profile">
-                                            </div>
-                                            <div class="notif-content">
-                                                <span class="subject">Jimmy Denis</span>
-                                                <span class="block"> How are you ? </span>
-                                                <span class="time">5 minutes ago</span>
-                                            </div>
-                                        </a>
-                                        <a href="#">
-                                            <div class="notif-img">
-                                                <img src="../assets/img/chadengle.jpg" alt="Img Profile">
-                                            </div>
-                                            <div class="notif-content">
-                                                <span class="subject">Chad</span>
-                                                <span class="block"> Ok, Thanks ! </span>
-                                                <span class="time">12 minutes ago</span>
-                                            </div>
-                                        </a>
-                                        <a href="#">
-                                            <div class="notif-img">
-                                                <img src="../assets/img/mlane.jpg" alt="Img Profile">
-                                            </div>
-                                            <div class="notif-content">
-                                                <span class="subject">Jhon Doe</span>
-                                                <span class="block">
-                                                    Ready for the meeting today...
-                                                </span>
-                                                <span class="time">12 minutes ago</span>
-                                            </div>
-                                        </a>
-                                        <a href="#">
-                                            <div class="notif-img">
-                                                <img src="{{ asset('assets/img/talha.jpg') }}" alt="Img Profile">
-                                            </div>
-                                            <div class="notif-content">
-                                                <span class="subject">Talha</span>
-                                                <span class="block"> Hi, Apa Kabar ? </span>
-                                                <span class="time">17 minutes ago</span>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="scroll-element scroll-x">
-                                    <div class="scroll-element_outer">
-                                        <div class="scroll-element_size"></div>
-                                        <div class="scroll-element_track"></div>
-                                        <div class="scroll-bar"></div>
-                                    </div>
-                                </div>
-                                <div class="scroll-element scroll-y">
-                                    <div class="scroll-element_outer">
-                                        <div class="scroll-element_size"></div>
-                                        <div class="scroll-element_track"></div>
-                                        <div class="scroll-bar"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <a class="see-all" href="javascript:void(0);">See all messages<i
-                                    class="fa fa-angle-right"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="nav-item topbar-icon dropdown hidden-caret">
                     <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-bell"></i>
@@ -168,7 +83,7 @@
                                                     ->locale('vi')
                                                     ->diffForHumans();
                                             @endphp
-                                            <a href="{{ route('admin.transfer.updateNotification', ['id' => $item->id]) }}"
+                                            <a href="{{ route('admin.{username}.transfer.updateNotification', ['username' => Auth::user()->username, 'id' => $item->id]) }}"
                                                 class="notification-item mark-as-read">
                                                 <!-- Thêm data-href -->
                                                 <div class="notif-icon notif-primary">
@@ -190,7 +105,7 @@
                                                     ->locale('vi')
                                                     ->diffForHumans();
                                             @endphp
-                                            <a href="{{ route('admin.transaction.updateNotification', ['id' => $item->id]) }}"
+                                            <a href="{{ route('admin.{username}.transaction.updateNotification', ['username' => Auth::user()->username, 'id' => $item->id]) }}"
                                                 class="notification-item mark-as-read">
                                                 <!-- Thêm data-href -->
                                                 <div class="notif-icon notif-primary">
@@ -233,88 +148,6 @@
                             </a>
                         </li>
                     </ul>
-                </li>
-                <li class="nav-item topbar-icon dropdown hidden-caret">
-                    <a class="nav-link" data-bs-toggle="dropdown" href="#" aria-expanded="false">
-                        <i class="fas fa-layer-group"></i>
-                    </a>
-                    <div class="dropdown-menu quick-actions animated fadeIn">
-                        <div class="quick-actions-header">
-                            <span class="title mb-1">Quick Actions</span>
-                            <span class="subtitle op-7">Shortcuts</span>
-                        </div>
-                        <div class="scroll-wrapper quick-actions-scroll scrollbar-outer" style="position: relative;">
-                            <div class="quick-actions-scroll scrollbar-outer scroll-content"
-                                style="height: auto; margin-bottom: 0px; margin-right: 0px; max-height: 0px;">
-                                <div class="quick-actions-items">
-                                    <div class="row m-0">
-                                        <a class="col-6 col-md-4 p-0" href="#">
-                                            <div class="quick-actions-item">
-                                                <div class="avatar-item bg-danger rounded-circle">
-                                                    <i class="far fa-calendar-alt"></i>
-                                                </div>
-                                                <span class="text">Calendar</span>
-                                            </div>
-                                        </a>
-                                        <a class="col-6 col-md-4 p-0" href="#">
-                                            <div class="quick-actions-item">
-                                                <div class="avatar-item bg-warning rounded-circle">
-                                                    <i class="fas fa-map"></i>
-                                                </div>
-                                                <span class="text">Maps</span>
-                                            </div>
-                                        </a>
-                                        <a class="col-6 col-md-4 p-0" href="#">
-                                            <div class="quick-actions-item">
-                                                <div class="avatar-item bg-info rounded-circle">
-                                                    <i class="fas fa-file-excel"></i>
-                                                </div>
-                                                <span class="text">Reports</span>
-                                            </div>
-                                        </a>
-                                        <a class="col-6 col-md-4 p-0" href="#">
-                                            <div class="quick-actions-item">
-                                                <div class="avatar-item bg-success rounded-circle">
-                                                    <i class="fas fa-envelope"></i>
-                                                </div>
-                                                <span class="text">Emails</span>
-                                            </div>
-                                        </a>
-                                        <a class="col-6 col-md-4 p-0" href="#">
-                                            <div class="quick-actions-item">
-                                                <div class="avatar-item bg-primary rounded-circle">
-                                                    <i class="fas fa-file-invoice-dollar"></i>
-                                                </div>
-                                                <span class="text">Invoice</span>
-                                            </div>
-                                        </a>
-                                        <a class="col-6 col-md-4 p-0" href="#">
-                                            <div class="quick-actions-item">
-                                                <div class="avatar-item bg-secondary rounded-circle">
-                                                    <i class="fas fa-credit-card"></i>
-                                                </div>
-                                                <span class="text">Payments</span>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="scroll-element scroll-x">
-                                <div class="scroll-element_outer">
-                                    <div class="scroll-element_size"></div>
-                                    <div class="scroll-element_track"></div>
-                                    <div class="scroll-bar"></div>
-                                </div>
-                            </div>
-                            <div class="scroll-element scroll-y">
-                                <div class="scroll-element_outer">
-                                    <div class="scroll-element_size"></div>
-                                    <div class="scroll-element_track"></div>
-                                    <div class="scroll-bar"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </li>
 
                 <li class="nav-item topbar-user dropdown hidden-caret">
@@ -452,7 +285,8 @@
                     </div>
                     <div class="form-group">
                         <label for="access_token">Access Token</label>
-                        <input type="access_token" class="form-control" id="access_token" name="access_token" required>
+                        <input type="access_token" class="form-control" id="access_token" name="access_token"
+                            required>
                         <div class="invalid-feedback" id="access_token-error"></div>
                     </div>
                     <div class="form-group">

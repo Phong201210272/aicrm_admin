@@ -25,4 +25,9 @@ class Customer extends Model
     {
         return $this->belongsTo(City::class, 'city_id');
     }
+
+    public function campaignDetails()
+    {
+        return $this->hasMany(CampaignDetail::class, 'customer_id');
+    }
 }

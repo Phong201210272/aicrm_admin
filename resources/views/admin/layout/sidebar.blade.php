@@ -3,10 +3,10 @@
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
             <a href="" class="logo">
-                <img src="{{ asset('assets/img/kaiadmin/logo_light.svg') }}" alt="navbar brand" class="navbar-brand"
-                    height="20" />
+                {{-- <img src="{{ asset('images/logo_admin.png') }}" alt="navbar brand" class="navbar-brand"
+                    height="20" /> --}}
             </a>
-            <div class="nav-toggle">
+            {{-- <div class="nav-toggle">
                 <button class="btn btn-toggle toggle-sidebar">
                     <i class="gg-menu-right"></i>
                 </button>
@@ -16,7 +16,7 @@
             </div>
             <button class="topbar-toggler more">
                 <i class="gg-more-vertical-alt"></i>
-            </button>
+            </button> --}}
         </div>
         <!-- End Logo Header -->
     </div>

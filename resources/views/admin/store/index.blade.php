@@ -171,6 +171,14 @@
                         <div class="table-responsive">
                             <div id="basic-datatables_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
                                 <div class="row">
+                                    <div class="col-sm-12 col-md-5">
+                                        <button id="open-import-modal" type="button" class="btn btn-primary">
+                                            Import danh sách khách hàng
+                                        </button>
+                                        <a href="{{ asset('excel/sample.xlsx') }}" class="btn btn-secondary" download>
+                                            Tải file mẫu
+                                        </a>
+                                    </div>
                                     <div class="col-sm-12 col-md-6">
                                         <form
                                             action="{{ route('admin.{username}.store.findByPhone', ['username' => Auth::user()->username]) }}"
@@ -268,12 +276,100 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Excel File</h5>
+                    <button id="close-x" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="importForm" method="post" enctype="multipart/form-data">
+                        @csrf
+                        <div class="form-group">
+                            <label for="source">Nguồn</label>
+                            <input type="text" class="form-control" id="source" name="source"
+                                placeholder="Nhập nguồn">
+                        </div>
+                        <div class="form-group">
+                            <label for="excelFile">Chọn file Excel</label>
+                            <input type="file" class="form-control-file" id="excelFile" name="import_file"
+                                accept=".xlsx, .xls">
+                        </div>
+                        <div class="form-group">
+                            <small class="text-danger">
+                                Bắt buộc nhập 2 trường họ tên và số điện thoại (số điện thoại phải đủ 10 số và bắt đầu bằng
+                                số 0)
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" form="importForm" class="btn btn-primary">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-notify/0.2.0/js/bootstrap-notify.min.js"></script>
     <script>
         $(document).ready(function() {
+            $('#open-import-modal').on('click', function() {
+                $('#importModal').modal('show');
+            });
 
+            $('#close-x').on('click', function() {
+                $('#importModal').modal('hide');
+            });
 
+            $('#importForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: "{{ route('admin.{username}.store.import', ['username' => Auth::user()->username]) }}", // URL đúng
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công',
+                                text: response.message,
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: response.message,
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        var errorMessage = 'Có lỗi xảy ra!';
+                        if (xhr.status === 422) {
+                            var errors = xhr.responseJSON.errors;
+                            errorMessage = Object.values(errors).map(error => error.join(', '))
+                                .join('<br>');
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            html: errorMessage,
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
             // Accordion functionality
             $('.accordion-button').click(function() {
                 $(this).next('.accordion-content').slideToggle();

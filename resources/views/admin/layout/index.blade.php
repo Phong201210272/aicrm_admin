@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <meta content="Giải pháp chăm sóc khách hàng tiết kiệm và hiệu quả trên Zalo - Zalo Notification Service"
+        name="description" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
         integrity="sha384-DyZ88mC6Up2uqS0zUpUf2BwA6E81y/eK2snElDkC2DdAb5I8Tx1gfZDA1ibbhwYs" crossorigin="anonymous">
@@ -26,7 +29,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-notify/0.2.0/css/bootstrap-notify.css">
     <script src="{{ asset('validator/validator.js') }}"></script>
 
-    <title>Document</title>
+    <title>Hệ thống gửi tin nhắn tự động Zalo ZNS by SGO Việt Nam | AICRM</title>
 </head>
 <style>
     .collapse {
@@ -35,6 +38,33 @@
 
     .collapse.show {
         display: block;
+    }
+
+    #button-contact-vr {
+        position: fixed;
+        bottom: 0;
+        z-index: 99999;
+    }
+
+    #button-contact-vr .button-contact .phone-vr {
+        position: relative;
+        visibility: visible;
+        background-color: transparent;
+        width: 90px;
+        height: 90px;
+        cursor: pointer;
+        z-index: 11;
+        -webkit-backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
+        transition: visibility .5s;
+        left: 0;
+        bottom: 0;
+        display: block;
+    }
+
+    #button-contact-vr .button-contact {
+        position: relative;
+        margin-top: -5px;
     }
 </style>
 
@@ -46,6 +76,25 @@
 
             @include('admin.layout.header');
             <div class="container">
+                <div id="button-contact-vr" class="">
+                    <div id="gom-all-in-one"><!-- v3 -->
+                        <!-- zalo -->
+                        <div id="zalo-vr" class="button-contact">
+                            <div class="phone-vr">
+                                <div class="phone-vr-circle-fill"></div>
+                                <div class="phone-vr-img-circle">
+                                    <a target="_blank" href="https://zalo.me/0981185620">
+                                        <img alt="Zalo"
+                                            src="https://sgomedia.vn/wp-content/plugins/button-contact-vr/img/zalo.png">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end zalo -->
+                    </div><!-- end v3 class gom-all-in-one -->
+
+
+                </div>
                 @yield('content')
             </div>
 
