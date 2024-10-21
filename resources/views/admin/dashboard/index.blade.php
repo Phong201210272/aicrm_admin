@@ -33,7 +33,7 @@
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
-                <a href="{{ route('admin.{username}.message.status', ['username' => Auth::user()->username, 'id' => 0]) }}"
+                <a href="{{ route('admin.{username}.message.status', ['username' => Auth::user()->username, 'status' => 0]) }}"
                     class="card card-stats card-round">
                     <div class="card-body">
                         <div class="row align-items-center">
@@ -53,7 +53,7 @@
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
-                <a href="{{ route('admin.{username}.message.status', ['username' => Auth::user()->username, 'id' => 1]) }}"
+                <a href="{{ route('admin.{username}.message.status', ['username' => Auth::user()->username, 'status' => 1]) }}"
                     class="card card-stats card-round">
                     <div class="card-body">
                         <div class="row align-items-center">
@@ -74,7 +74,7 @@
                 </a>
             </div>
             <div class="col-sm-6 col-md-3">
-                <a href="{{ route('admin.{username}.message.znsTemplate', ['username' => Auth::user()->username]) }}"
+                <a href="{{ route('admin.{username}.zalo.zns', ['username' => Auth::user()->username]) }}"
                     class="card card-stats card-round">
                     <div class="card-body">
                         <div class="row align-items-center">

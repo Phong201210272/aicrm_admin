@@ -10,6 +10,7 @@ use App\Services\OaTemplateService;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -29,6 +30,7 @@ class ZnsMessageController extends Controller
 
         // Lấy tất cả các tin nhắn từ các OA đang hoạt động
         $messages = ZnsMessage::whereIn('oa_id', $activeOas)
+            ->where('user_id', Auth::user()->id)
             ->orderByDesc('sent_at')
             ->get();
         // dd($messages);
@@ -222,29 +224,35 @@ class ZnsMessageController extends Controller
     //     }
     // }
 
-    public function status($id)
+    public function status(Request $request)
     {
-        // Lấy tất cả các OA đang hoạt động
-        if ($id == 1) {
-            $title = 'Danh sách tin nhắn gửi thành công';
+        // Lấy giá trị trạng thái từ request
+        $status = $request->get('status');
+
+        // Kiểm tra nếu không có trạng thái, trả về tất cả tin nhắn
+        if ($status !== null) {
+            $messages = ZnsMessage::where('status', $status)->where('user_id', Auth::user()->id)->orderByDesc('created_at')->get();
         } else {
-            $title = 'Danh sách tin nhắn đã gửi thất bại';
+            $messages = ZnsMessage::where('user_id', Auth::user()->id)->orderByDesc('created_at')->get();
         }
-        $activeOas = ZaloOa::where('is_active', 1)->pluck('id');
 
-        // Lấy tất cả các tin nhắn từ các OA đang hoạt động
-        $messages = ZnsMessage::whereIn('oa_id', $activeOas)
-            ->where('status', $id)
-            ->orderByDesc('sent_at')
-            ->get();
-        // dd($messages);
-        // Tính tổng phí cho mỗi OA
-        $totalFeesByOa = $messages->groupBy('oa_id')->map(function ($messagesByOa) {
-            return $messagesByOa->sum(function ($message) {
-                return $message->status == 1 ? ($message->template->price ?? 0) : 0;
-            });
-        });
+        // Nếu là AJAX request, trả về view chứa bảng tin nhắn
+        if ($request->ajax()) {
+            return view('admin.message.index', compact('messages'))->render();
+        }
 
-        return view('admin.message.index', compact('messages', 'totalFeesByOa', 'title'));
+        // Nếu không phải AJAX, trả về toàn bộ view
+        return view('admin.message.table', compact('messages'));
+    }
+
+    public function statusDashboard(Request $request)
+    {
+        $status = $request->get('status');
+
+        if ($status !== null) {
+            $messages = ZnsMessage::where('status', $status)->where('user_id', Auth::user()->id)->orderByDesc('created_at')->get();
+        }
+
+        return view('admin.message.table', compact('messages'));
     }
 }

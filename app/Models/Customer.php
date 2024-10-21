@@ -18,7 +18,8 @@ class Customer extends Model
         'city_id',
         'district_id',
         'ward_id',
-        'user_id'
+        'user_id',
+        'product_id',
     ];
 
     public function city()
@@ -29,5 +30,10 @@ class Customer extends Model
     public function campaignDetails()
     {
         return $this->hasMany(CampaignDetail::class, 'customer_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }

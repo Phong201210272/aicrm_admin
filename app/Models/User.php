@@ -110,4 +110,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transfer::class, 'user_id');
     }
+
+    public function message()
+    {
+        return $this->hasMany(ZnsMessage::class, 'user_id');
+    }
 }

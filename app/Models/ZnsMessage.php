@@ -18,7 +18,8 @@ class ZnsMessage extends Model
         'status',
         'note',
         'template_id',
-        'oa_id'  // Ensure this is included if it's used in relationships
+        'oa_id',  // Ensure this is included if it's used in relationships
+        'user_id',
     ];
 
     // Define a relationship with OaTemplate
@@ -33,4 +34,8 @@ class ZnsMessage extends Model
         return $this->belongsTo(ZaloOa::class, 'oa_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

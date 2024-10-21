@@ -2,6 +2,7 @@
 
 @section('content')
     <style>
+        /* CSS như cũ */
         .table-responsive {
             overflow-x: auto;
         }
@@ -50,56 +51,42 @@
     </style>
 
     <div class="container-fluid">
-        <h2>{{ $title }}</h2>
+        <h2>Danh sách tin nhắn</h2>
 
-        @if ($messages->isEmpty())
-            <div class="no-data-message">Không có tin nhắn nào để hiển thị.</div>
-        @else
-            <div class="summary-section">
-                <div class="total-fees">
-                    @foreach ($totalFeesByOa as $oaId => $totalFee)
-                        <p><strong>Tổng phí:</strong>
-                            {{ $totalFee }} đ</p>
-                    @endforeach
-                </div>
-            </div>
+        <!-- Form Lọc Trạng Thái -->
+        <label for="status">Chọn trạng thái:</label>
+        <select name="status" id="status" onchange="filterByStatus()">
+            <option value="">Tất cả</option> <!-- Thêm tùy chọn này để hiển thị tất cả tin nhắn -->
+            <option value="0">Gửi thất bại</option>
+            <option value="1">Gửi thành công</option>
+        </select>
 
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>OA</th>
-                            <th>Tên</th>
-                            <th>Số điện thoại</th>
-                            <th>Ngày gửi</th>
-                            <th>Template</th>
-                            <th>Phí</th>
-                            <th>Trạng thái</th>
-                            <th>Thông báo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($messages as $message)
-                            <tr>
-                                <td>{{ $message->zaloOa->name }}</td>
-                                <td>{{ $message->name }}</td>
-                                <td>{{ $message->phone }}</td>
-                                <td>{{ \Carbon\Carbon::parse($message->sent_at)->format('H:i:s d/m/Y') }}</td>
-                                <td>{{ $message->template->template_name ?? 'N/A' }}</td>
-                                <td>{{ $message->status == 1 ? $message->template->price ?? '0' : '0' }} đ</td>
-                                <td>
-                                    @if ($message->status == 1)
-                                        Thành công
-                                    @else
-                                        Thất bại
-                                    @endif
-                                </td>
-                                <td>{{ $message->note }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
+
+        <!-- Div hiển thị danh sách tin nhắn -->
+        <div id="messageTable">
+            @include('admin.message.table', ['messages' => $messages])
+        </div>
     </div>
+
+    <script>
+        function filterByStatus() {
+            const status = document.getElementById('status').value;
+            let url = `{{ route('admin.{username}.message.status', ['username' => Auth::user()->username]) }}`;
+
+            if (status !== "") {
+                url += `?status=${status}`;
+            }
+
+            // Gửi yêu cầu AJAX đến server
+            fetch(url)
+                .then(response => response.text()) // Lấy dữ liệu phản hồi dưới dạng văn bản HTML
+                .then(data => {
+                    // Cập nhật bảng tin nhắn mà không cần tải lại trang
+                    document.getElementById('messageTable').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                });
+        }
+    </script>
 @endsection

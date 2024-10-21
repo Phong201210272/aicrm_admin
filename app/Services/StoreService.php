@@ -71,6 +71,7 @@ class StoreService
 
     public function deleteStore($id)
     {
+        DB::beginTransaction();
         try {
             // dd($id);
             Log::info("Deleting store");
@@ -88,68 +89,114 @@ class StoreService
     {
         DB::beginTransaction();
         try {
-            Log::info('Creating new client');
-            // dd(Auth::user()->id);
+            Log::info('Starting process to create new client with data: ', $data);
+
+            // Lấy thông tin user hiện tại
             $user = Auth::user();
-            // dd($user);
-            $user_id = Auth::user()->id;
+            $user_id = $user->id;
+
+            // Tạo khách hàng mới
             $customer = Customer::create([
                 'name' => $data['name'],
                 'phone' => $data['phone'],
-                'email' => $data['email'],
-                'address' => $data['address'],
+                'email' => $data['email'] ?? null,
+                'address' => $data['address'] ?? null,
                 'source' => $data['source'] ?? 'Thêm thủ công',
                 'user_id' => $user_id,
+                'product_id' => $data['product_id'] ?? null,
             ]);
 
-            // $user = AutomationUser::first();
-            // if ($user->status != 1) {
-            //     return;
-            // } else {
-            //     $accessToken = $this->getAccessToken();
-            //     $oa_id = ZaloOa::where('is_active', 1)->first()->id;
+            Log::info('Customer created successfully: ' . json_encode($customer));
 
-            //     try {
-            //         // Gửi yêu cầu tới API Zalo
-            //         $clientapi = new Client();
-            //         $response = $clientapi->post('https://business.openapi.zalo.me/message/template', [
-            //             'headers' => [
-            //                 'access_token' => $accessToken,
-            //                 'Content-Type' => 'application/json'
-            //             ],
-            //             'json' => [
-            //                 'phone' => preg_replace('/^0/', '84', $data['phone']),
-            //                 'template_id' => '355330',
-            //                 'template_data' => [
-            //                     'date' => Carbon::now()->format('d/m/Y') ?? "",
-            //                     'name' => $data['name'] ?? "",
-            //                     'order_code' => $client->id,
-            //                     'phone_number' => $data['phone'],
-            //                     'status' => 'Đăng ký thành công'
-            //                 ]
-            //             ]
-            //         ]);
-            //     } catch (Exception $e) {
-            //         Log::error('Lỗi khi gửi tin nhắn: ' . $e->getMessage());
-            //     }
-            // }
+            // Lấy token và thông tin cần thiết từ API Zalo
             $accessToken = $this->zaloOaService->getAccessToken();
             $oa_id = ZaloOa::where('is_active', 1)->first()->id;
-            $price = AutoMationUser::first()->template->price;
             $template_id = AutomationUser::first()->template->template_id;
             $user_template_id = AutomationUser::first()->template_id;
             $automationUserStatus = AutomationUser::first()->status;
-            if ($automationUserStatus == 1) {
-                $price = AutomationUser::first()->template->price;
 
-                // Kiểm tra và trừ tiền từ sub_wallet trước
-                if ($user->sub_wallet >= $price) {
-                    $user->sub_wallet -= $price;
-                } elseif ($user->wallet >= $price) {
-                    // Nếu sub_wallet không đủ, trừ từ wallet nếu đủ tiền
-                    $user->wallet -= $price;
+            $price = AutomationUser::first()->template->price;
+            Log::info('Automation User Status: ' . $automationUserStatus . ' | Price: ' . $price);
+
+            // Kiểm tra trạng thái automation
+            if ($automationUserStatus == 1) {
+                if ($user->sub_wallet >= $price || $user->wallet >= $price) {
+                    try {
+                        Log::info('Attempting to send ZNS message via Zalo API');
+                        // Gửi yêu cầu tới API Zalo
+                        $client = new Client();
+                        $response = $client->post('https://business.openapi.zalo.me/message/template', [
+                            'headers' => [
+                                'access_token' => $accessToken,
+                                'Content-Type' => 'application/json'
+                            ],
+                            'json' => [
+                                'phone' => preg_replace('/^0/', '84', $data['phone']),
+                                'template_id' => $template_id,
+                                'template_data' => [
+                                    'date' => Carbon::now()->format('d/m/Y') ?? "",
+                                    'name' => $data['name'] ?? "",
+                                    'order_code' => $customer->id,
+                                    'phone_number' => $data['phone'],
+                                    'status' => 'Đăng ký thành công',
+                                    'price' => $price,
+                                    'payment' => $customer->source,
+                                    'custom_field' => $customer->address,
+                                    'product_name' => $data['product_name'] ?? '',
+                                    'payment' => 'Chuyển khoản ngân hàng',
+                                    'phone' => $data['phone'],
+                                    'payment_status' => 'Chuyển khoản thành công',
+                                    'customer_name' => $data['name'] ?? ''
+                                ]
+                            ]
+                        ]);
+
+                        $responseBody = $response->getBody()->getContents();
+                        Log::info('Zalo API Response: ' . $responseBody);
+
+                        $responseData = json_decode($responseBody, true);
+                        $status = $responseData['error'] == 0 ? 1 : 0;
+
+                        ZnsMessage::create([
+                            'name' => $data['name'],
+                            'phone' => $data['phone'],
+                            'sent_at' => Carbon::now(),
+                            'status' => $status,
+                            'note' => $responseData['message'],
+                            'oa_id' => $oa_id,
+                            'template_id' => $user_template_id,
+                            'user_id' => $user->id,
+                        ]);
+
+                        if ($status == 1) {
+                            Log::info('ZNS message sent successfully');
+                            // Trừ tiền khi tin nhắn gửi thành công
+                            if ($user->sub_wallet >= $price) {
+                                $user->sub_wallet -= $price;
+                                Log::info('Sub_wallet has enough funds. Subtracted: ' . $price);
+                            } elseif ($user->wallet >= $price) {
+                                $user->wallet -= $price;
+                                Log::info('Main wallet has enough funds. Subtracted: ' . $price);
+                            }
+                        } else {
+                            Log::error('ZNS message failed: ' . $responseBody);
+                        }
+                    } catch (Exception $e) {
+                        Log::error('Error occurred while sending ZNS message: ' . $e->getMessage());
+
+                        // Tạo bản ghi khi gặp lỗi
+                        ZnsMessage::create([
+                            'name' => $data['name'],
+                            'phone' => $data['phone'],
+                            'sent_at' => Carbon::now(),
+                            'status' => 0,
+                            'note' => $e->getMessage(),
+                            'oa_id' => $oa_id,
+                            'user_id' => $user->id,
+                        ]);
+                    }
                 } else {
-                    // Nếu cả hai ví đều không đủ tiền, không gửi tin nhắn nhưng vẫn tạo bản ghi message
+                    Log::warning('Not enough funds in both wallets.');
                     ZnsMessage::create([
                         'name' => $data['name'],
                         'phone' => $data['phone'],
@@ -158,72 +205,11 @@ class StoreService
                         'note' => 'Tài khoản của bạn không đủ tiền để thực hiện gửi tin nhắn',
                         'oa_id' => $oa_id,
                         'template_id' => $user_template_id,
-                    ]);
-                    return; // Dừng thực hiện gửi tin nhắn
-                }
-
-                try {
-                    // Gửi yêu cầu tới API ZALO
-                    $client = new Client();
-                    $response = $client->post('https://business.openapi.zalo.me/message/template', [
-                        'headers' => [
-                            'access_token' => $accessToken,
-                            'Content-Type' => 'application/json'
-                        ],
-                        'json' => [
-                            'phone' => preg_replace('/^0/', '84', $data['phone']),
-                            'template_id' => $template_id,
-                            'template_data' => [
-                                'date' => Carbon::now()->format('d/m/Y') ?? "",
-                                'name' => $data['name'] ?? "",
-                                'order_code' => $customer->id,
-                                'phone_number' => $data['phone'],
-                                'status' => 'Đăng ký thành công',
-                                'payment_status' => 'Thành công',
-                                'customer_name' => $data['name'],
-                                'phone' => $data['phone'],
-                                'price' => $price,
-                                'payment' => $customer->source,
-                                'custom_field' => $customer->address,
-                            ]
-                        ]
-                    ]);
-
-                    $responseBody = $response->getBody()->getContents();
-                    Log::info('Api Response: ' . $responseBody);
-
-                    $responseData = json_decode($responseBody, true);
-                    $status = $responseData['error'] == 0 ? 1 : 0;
-
-                    // Tạo bản ghi ZNS Message
-                    ZnsMessage::create([
-                        'name' => $data['name'],
-                        'phone' => $data['phone'],
-                        'sent_at' => Carbon::now(),
-                        'status' => $status,
-                        'note' => $responseData['message'],
-                        'template_id' => $user_template_id,
-                        'oa_id' => $oa_id,
-                    ]);
-
-                    if ($status == 1) {
-                        Log::info('Gửi ZNS thành công');
-                    } else {
-                        Log::error('Gửi ZNS thất bại: ' . $response->getBody());
-                    }
-                } catch (Exception $e) {
-                    Log::error('Lỗi khi gửi tin nhắn: ' . $e->getMessage());
-                    // Lưu thông tin tin nhắn vào cơ sở dữ liệu khi gặp lỗi
-                    ZnsMessage::create([
-                        'name' => $data['name'],
-                        'phone' => $data['phone'],
-                        'sent_at' => Carbon::now(),
-                        'status' => 0,
-                        'note' => $e->getMessage(),
-                        'oa_id' => $oa_id,
+                        'user_id' => $user->id,
                     ]);
                 }
             } else {
+                Log::warning('Automation User is not active');
                 ZnsMessage::create([
                     'name' => $data['name'],
                     'phone' => $data['phone'],
@@ -232,17 +218,22 @@ class StoreService
                     'note' => 'Chưa kích hoạt ZNS Automation',
                     'oa_id' => $oa_id,
                     'template_id' => $user_template_id,
+                    'user_id' => $user->id,
                 ]);
             }
+
             $user->save();
             DB::commit();
+            Log::info('Transaction committed successfully');
             return $customer;
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error("Failed to add new client: " . $e->getMessage());
+            Log::error('Failed to add new client: ' . $e->getMessage());
             throw new Exception('Failed to add new client');
         }
     }
+
+
 
     // protected function getAccessToken()
     // {

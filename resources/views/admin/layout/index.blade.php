@@ -32,6 +32,26 @@
     <title>Hệ thống gửi tin nhắn tự động Zalo ZNS by SGO Việt Nam | AICRM</title>
 </head>
 <style>
+    /* Đặt cấu trúc cơ bản cho header *
+
+    /* Đảm bảo rằng logo và các nút trong header không bị ẩn */
+
+    /* Định dạng cho navbar */
+
+    /* Media query cho màn hình nhỏ */
+    /* @media (max-width: 768px) {
+        .navbar-nav {
+            flex-direction: column !important;
+            /* Đảm bảo các mục trong navbar xếp theo hàng */
+
+
+    /* Đảm bảo các nút không bị ẩn
+        .nav-item {
+            display: block !important;
+            width: 100%;
+        }
+    } */
+
     .collapse {
         display: none;
     }
@@ -42,8 +62,10 @@
 
     #button-contact-vr {
         position: fixed;
-        bottom: 0;
+        bottom: 20px;
+        right: 20px;
         z-index: 99999;
+        /* Đảm bảo z-index cao hơn các phần tử khác */
     }
 
     #button-contact-vr .button-contact .phone-vr {
@@ -56,15 +78,89 @@
         z-index: 11;
         -webkit-backface-visibility: hidden;
         -webkit-transform: translateZ(0);
-        transition: visibility .5s;
+        transition: visibility .5s, transform 0.3s ease;
         left: 0;
         bottom: 0;
         display: block;
     }
 
+    #button-contact-vr .button-contact .phone-vr:hover {
+        transform: scale(1.1);
+        /* Hiệu ứng phóng to khi hover */
+    }
+
+    #button-contact-vr .button-contact .phone-vr .phone-vr-img-circle {
+        background: linear-gradient(135deg, #1dcaff 0%, #0a74da 100%);
+        /* Thêm gradient cho nền nút */
+        border-radius: 50%;
+        padding: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        /* Hiệu ứng shadow */
+    }
+
+    #button-contact-vr .button-contact .phone-vr .phone-vr-img-circle img {
+        width: 100%;
+        /* Đảm bảo icon Zalo phù hợp với kích thước */
+        height: auto;
+    }
+
+    #button-contact-vr .button-contact .phone-vr .phone-vr-circle-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(29, 202, 255, 0.2);
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+        /* Hiệu ứng nhấp nháy */
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1.5);
+            opacity: 0;
+        }
+    }
+
     #button-contact-vr .button-contact {
         position: relative;
         margin-top: -5px;
+    }
+
+    #floating-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #007bff;
+        /* Màu xanh */
+        color: white;
+        border: none;
+        border-radius: 50px;
+        width: 60px;
+        height: 60px;
+        text-align: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        display: none;
+        /* Ẩn nút ban đầu */
+        z-index: 9999;
+    }
+
+    #floating-button i {
+        font-size: 24px;
+        line-height: 60px;
+    }
+
+    .phone-vr-img-circle img {
+        width: 50px;
+        /* Hoặc điều chỉnh kích thước theo ý bạn */
+        height: auto;
+        /* Giữ tỉ lệ */
     }
 </style>
 
@@ -74,36 +170,34 @@
 
         <div class="main-panel">
 
-            @include('admin.layout.header');
+            @include('admin.layout.header')
             <div class="container">
-                <div id="button-contact-vr" class="">
+                <div id="button-contact-vr">
                     <div id="gom-all-in-one"><!-- v3 -->
                         <!-- zalo -->
                         <div id="zalo-vr" class="button-contact">
                             <div class="phone-vr">
-                                <div class="phone-vr-circle-fill"></div>
                                 <div class="phone-vr-img-circle">
-                                    <a target="_blank" href="https://zalo.me/0981185620">
+                                    <a href="https://zalo.me/0981185620" target="_blank"
+                                        style="display: block; width: 100%; height: 100%;">
                                         <img alt="Zalo"
                                             src="https://sgomedia.vn/wp-content/plugins/button-contact-vr/img/zalo.png">
                                     </a>
                                 </div>
                             </div>
                         </div>
+
                         <!-- end zalo -->
                     </div><!-- end v3 class gom-all-in-one -->
-
-
                 </div>
                 @yield('content')
             </div>
 
-
             @include('admin.layout.footer')
 
         </div>
-
     </div>
+
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -184,6 +278,14 @@
 
     <script>
         $(document).ready(function() {
+            $('#client_close').click(function() {
+                $('#addClientModal').modal('hide');
+            })
+
+            $('#toggleButton').click(function() {
+                // Sử dụng jQuery để toggle (hiện/ẩn) container-fluid với hiệu ứng trượt
+                $('#dropdownContent').slideToggle('fast'); // 'fast' hoặc 'slow' để điều chỉnh tốc độ
+            });
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -327,7 +429,10 @@
                     }
                 });
             });
-
+            // $('#zalo-vr .phone-vr-img-circle a').on('click', function(e) {
+            //     e.preventDefault(); // Ngăn chặn hành động mặc định
+            //     alert('Đã nhấn vào Zalo!'); // Hiển thị thông báo
+            // });
         });
     </script>
 

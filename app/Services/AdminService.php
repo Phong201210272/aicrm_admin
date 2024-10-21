@@ -25,7 +25,7 @@ class AdminService
         $this->user = $user;
         $this->superAdmin = $superAdmin;
     }
-    public function getUserById(int $id): User
+    public function getUserById($id): User
     {
         Log::info("Fetching user with ID: $id");
         $user = $this->user->find($id);
