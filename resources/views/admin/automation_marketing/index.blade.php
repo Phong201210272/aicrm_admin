@@ -259,20 +259,21 @@
                                                     <td>1</td>
                                                     <td>{{ $user->name }}</td>
                                                     <td>
-                                                        <select name="template_id" class="form-control">
+                                                        <select name="template_id" class="form-control template-dropdown"
+                                                            data-id="{{ $user->id }}">
                                                             <!-- Hiển thị template hiện tại -->
                                                             <option value="{{ $user->template->id }}">
                                                                 {{ $user->template->template_name }}</option>
 
                                                             <!-- Hiển thị danh sách templates còn lại -->
                                                             @foreach ($templates as $template)
-                                                                <!-- Loại bỏ template hiện tại khỏi danh sách để tránh trùng lặp -->
                                                                 @if ($template->id != $user->template->id)
                                                                     <option value="{{ $template->id }}">
                                                                         {{ $template->template_name }}</option>
                                                                 @endif
                                                             @endforeach
                                                         </select>
+
                                                     </td>
                                                     <td>
                                                         <label class="switch">
@@ -354,13 +355,14 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-notify/0.2.0/js/bootstrap-notify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
             // Khi người dùng thay đổi trạng thái của checkbox
             $('.toggle-status').on('change', function() {
                 var userId = $(this).data('id'); // Lấy ID người dùng từ thuộc tính data-id
                 var status = $(this).is(':checked') ? 1 :
-                    0; // Lấy trạng thái mới (1 nếu checked, 0 nếu không)
+                0; // Lấy trạng thái mới (1 nếu checked, 0 nếu không)
 
                 // Gửi AJAX request để cập nhật trạng thái
                 $.ajax({
@@ -373,45 +375,30 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            $.notify({
-                                icon: 'icon-bell',
+                            Swal.fire({
+                                icon: 'success',
                                 title: 'Thành công',
-                                message: 'Cập nhật trạng thái thành công!',
-                            }, {
-                                type: 'success',
-                                placement: {
-                                    from: "top",
-                                    align: "right"
-                                },
-                                time: 1000,
+                                text: 'Cập nhật trạng thái thành công!',
+                                timer: 1500,
+                                showConfirmButton: false,
                             });
                         } else {
-                            $.notify({
-                                icon: 'icon-bell',
+                            Swal.fire({
+                                icon: 'error',
                                 title: 'Lỗi',
-                                message: 'Cập nhật trạng thái thất bại!',
-                            }, {
-                                type: 'danger',
-                                placement: {
-                                    from: "top",
-                                    align: "right"
-                                },
-                                time: 1000,
+                                text: 'Cập nhật trạng thái thất bại!',
+                                timer: 1500,
+                                showConfirmButton: false,
                             });
                         }
                     },
                     error: function() {
-                        $.notify({
-                            icon: 'icon-bell',
+                        Swal.fire({
+                            icon: 'error',
                             title: 'Lỗi',
-                            message: 'Có lỗi xảy ra, vui lòng thử lại!',
-                        }, {
-                            type: 'danger',
-                            placement: {
-                                from: "top",
-                                align: "right"
-                            },
-                            time: 1000,
+                            text: 'Có lỗi xảy ra, vui lòng thử lại!',
+                            timer: 1500,
+                            showConfirmButton: false,
                         });
                     }
                 });
@@ -433,45 +420,30 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            $.notify({
-                                icon: 'icon-bell',
+                            Swal.fire({
+                                icon: 'success',
                                 title: 'Thành công',
-                                message: 'Cập nhật template thành công!',
-                            }, {
-                                type: 'success',
-                                placement: {
-                                    from: "top",
-                                    align: "right"
-                                },
-                                time: 1000,
+                                text: 'Cập nhật template thành công!',
+                                timer: 1500,
+                                showConfirmButton: false,
                             });
                         } else {
-                            $.notify({
-                                icon: 'icon-bell',
+                            Swal.fire({
+                                icon: 'error',
                                 title: 'Lỗi',
-                                message: 'Cập nhật template thất bại!',
-                            }, {
-                                type: 'danger',
-                                placement: {
-                                    from: "top",
-                                    align: "right"
-                                },
-                                time: 1000,
+                                text: 'Cập nhật template thất bại!',
+                                timer: 1500,
+                                showConfirmButton: false,
                             });
                         }
                     },
                     error: function() {
-                        $.notify({
-                            icon: 'icon-bell',
+                        Swal.fire({
+                            icon: 'error',
                             title: 'Lỗi',
-                            message: 'Có lỗi xảy ra, vui lòng thử lại!',
-                        }, {
-                            type: 'danger',
-                            placement: {
-                                from: "top",
-                                align: "right"
-                            },
-                            time: 1000,
+                            text: 'Có lỗi xảy ra, vui lòng thử lại!',
+                            timer: 1500,
+                            showConfirmButton: false,
                         });
                     }
                 });

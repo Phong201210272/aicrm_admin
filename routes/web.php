@@ -98,8 +98,16 @@ Route::get('/product', function () {
 Route::get('/employee', function () {
     return view('Themes.pages.employee.index');
 })->name('employee');
-
 Route::middleware(CheckLogin::class)->prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('{username}/message')->name('{username}.message.')->group(function () {
+        Route::get('/status', [AdminZnsMessageController::class, 'status'])->name('status');
+        Route::get('', [AdminZnsMessageController::class, 'znsMessage'])->name('znsMessage');
+        Route::get('/quota', [AdminZnsMessageController::class, 'znsQuota'])->name('znsQuota');
+        Route::get('template', [AdminZnsMessageController::class, 'templateIndex'])->name('znsTemplate');
+        Route::get('refresh', [AdminZnsMessageController::class, 'refreshTemplates'])->name('znsTemplateRefresh');
+        Route::get('detail', [AdminZnsMessageController::class, 'getTemplateDetail'])->name('znsTemplateDetail');
+        Route::get('test', [AdminZnsMessageController::class, 'test'])->name('test');
+    });
     Route::prefix('{username}/product')->name('{username}.product.')->group(function () {
         Route::get('', [ProductController::class, 'index'])->name('index');
         Route::post('store', [ProductController::class, 'store'])->name('store');
@@ -112,7 +120,7 @@ Route::middleware(CheckLogin::class)->prefix('admin')->name('admin.')->group(fun
         Route::get('/index', [AdminStoreController::class, 'index'])->name('index');
         Route::get('/detail/{id}', [AdminStoreController::class, 'detail'])->name('detail');
         Route::get('/findByPhone', [AdminStoreController::class, 'findByPhone'])->name('findByPhone');
-        Route::get('/delete/{id}', [AdminStoreController::class, 'delete'])->name('delete');
+        Route::post('/delete', [AdminStoreController::class, 'delete'])->name('delete');
         Route::post('/store', [AdminStoreController::class, 'store'])->name('store');
     });
     Route::prefix('{username}/transaction')->name('{username}.transaction.')->group(function () {
@@ -146,15 +154,6 @@ Route::middleware(CheckLogin::class)->prefix('admin')->name('admin.')->group(fun
         Route::post('update/{id}', [AdminCampaignController::class, 'update'])->name('update');
         Route::post('delete', [AdminCampaignController::class, 'delete'])->name('delete');
         Route::post('update-status/', [AdminCampaignController::class, 'updateStatus'])->name('updateStatus');
-    });
-    Route::prefix('{username}/message')->name('{username}.message.')->group(function () {
-        Route::get('', [AdminZnsMessageController::class, 'znsMessage'])->name('znsMessage');
-        Route::get('/quota', [AdminZnsMessageController::class, 'znsQuota'])->name('znsQuota');
-        Route::get('template', [AdminZnsMessageController::class, 'templateIndex'])->name('znsTemplate');
-        Route::get('refresh', [AdminZnsMessageController::class, 'refreshTemplates'])->name('znsTemplateRefresh');
-        Route::get('detail', [AdminZnsMessageController::class, 'getTemplateDetail'])->name('znsTemplateDetail');
-        Route::get('test', [AdminZnsMessageController::class, 'test'])->name('test');
-        Route::get('/status/{id}', [AdminZnsMessageController::class, 'status'])->name('status');
     });
     Route::prefix('{username}/transfer')->name('{username}.transfer.')->group(function () {
         Route::get('', [AdminTransferController::class, 'index'])->name('index');

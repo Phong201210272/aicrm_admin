@@ -192,80 +192,10 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-sm-12">
-                                        <table id="basic-datatables"
-                                            class="display table table-striped table-hover dataTable" role="grid"
-                                            aria-describedby="basic-datatables_info">
-                                            <thead>
-                                                <tr>
-                                                    <th>STT</th>
-                                                    <th>Tên</th>
-                                                    <th>Điện thoại</th>
-                                                    <th>Thời gian</th>
-                                                    <th>Danh mục</th>
-                                                    <th>Nguồn</th>
-                                                    <th>Chiến dịch</th>
-                                                    <th style="text-align: center">Hành động</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @if ($stores && $stores->count() > 0)
-                                                    @php
-                                                        $stt = ($stores->currentPage() - 1) * $stores->perPage();
-                                                    @endphp
-                                                    @foreach ($stores as $value)
-                                                        @if (is_object($value))
-                                                            <tr>
-                                                                <td>{{ ++$stt }}</td>
-                                                                <td>{{ $value->name ?? '' }}</td>
-                                                                <td>{{ $value->phone ?? '' }}</td>
-                                                                <td>{{ $value->created_at ? $value->created_at->format('d/m/Y') : '' }}
-                                                                </td>
-                                                                <td>{{ $value->product->name ?? ''}}</td>
-                                                                <td>{{ $value->source ?? 'Thêm thủ công' }}</td>
-                                                                <td>
-                                                                    {{-- Accordion for campaigns --}}
-                                                                    @if ($value->campaignDetails && $value->campaignDetails->isNotEmpty())
-                                                                        <button class="accordion-button">
-                                                                            Xem chiến dịch
-                                                                        </button>
-                                                                        <div class="accordion-content">
-                                                                            <ul>
-                                                                                @foreach ($value->campaignDetails as $campaignDetail)
-                                                                                    <li>{{ $campaignDetail->campaign->name ?? 'Không có tên chiến dịch' }}
-                                                                                    </li>
-                                                                                @endforeach
-                                                                            </ul>
-                                                                        </div>
-                                                                    @else
-                                                                        Không có chiến dịch
-                                                                    @endif
-                                                                </td>
-                                                                <td style="text-align:center">
-                                                                    <a class="btn btn-warning"
-                                                                        href="{{ route('admin.{username}.store.detail', ['username' => Auth::user()->username, 'id' => $value->id]) }}">
-                                                                        <i class="fa-solid fa-eye"></i>
-                                                                    </a>
-                                                                    <a onclick="return confirm('Bạn có chắc chắn muốn xóa?')"
-                                                                        class="btn btn-danger"
-                                                                        href="{{ route('admin.{username}.store.delete', ['username' => Auth::user()->username, 'id' => $value->id]) }}"><i
-                                                                            class="fa-solid fa-trash"></i></a>
-                                                                </td>
-                                                            </tr>
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    <tr>
-                                                        <td class="text-center" colspan="7">
-                                                            <div class="">
-                                                                Chưa có khách hàng
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endif
-                                            </tbody>
-                                        </table>
-
+                                    <div class="col-sm-12" id="customer-table">
+                                        @include('admin.store.table', ['stores' => $stores])
+                                    </div>
+                                    <div class="col-sm-12" id="pagination">
                                         @if ($stores instanceof \Illuminate\Pagination\LengthAwarePaginator)
                                             {{ $stores->links('vendor.pagination.custom') }}
                                         @endif
@@ -319,6 +249,67 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-notify/0.2.0/js/bootstrap-notify.min.js"></script>
     <script>
         $(document).ready(function() {
+            $(document).on('click', '.btn-delete', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+
+                if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+                    $.ajax({
+                        url: '{{ route('admin.{username}.store.delete', ['username' => Auth::user()->username]) }}',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            _token: '{{ csrf_token() }}' // Thêm token bảo mật
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Cập nhật bảng và phân trang sau khi xóa
+                                $('#customer-table').html(response.table);
+                                $('#pagination').html(response.pagination);
+                                $.notify({
+                                    icon: 'icon-bell',
+                                    title: 'Sản phẩm',
+                                    message: response.message,
+                                }, {
+                                    type: 'success',
+                                    placement: {
+                                        from: "bottom",
+                                        align: "right"
+                                    },
+                                    time: 1000,
+                                });
+                            } else {
+                                $.notify({
+                                    icon: 'icon-bell',
+                                    title: 'Khách hàng',
+                                    message: response.message,
+                                }, {
+                                    type: 'danger',
+                                    placement: {
+                                        from: "bottom",
+                                        align: "right"
+                                    },
+                                    time: 1000,
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            $.notify({
+                                icon: 'icon-bell',
+                                title: 'Khách hàng',
+                                message: 'Có lỗi xảy ra trong quá trình xóa',
+                            }, {
+                                type: 'danger',
+                                placement: {
+                                    from: "bottom",
+                                    align: "right"
+                                },
+                                time: 1000,
+                            });
+                        }
+                    });
+                }
+            });
             $('#open-import-modal').on('click', function() {
                 $('#importModal').modal('show');
             });

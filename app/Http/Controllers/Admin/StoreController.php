@@ -142,7 +142,7 @@ class StoreController extends Controller
                                                 'customer_name' => $newUser->name,
                                                 'phone' => $newUser->phone,
                                                 'price' => $price,
-                                                'payment' => $request->source,
+                                                'payment' => 'Chuyển khoản ngân hàng',
                                                 'custom_field' => $newUser->address,
                                             ]
                                         ]
@@ -245,11 +245,25 @@ class StoreController extends Controller
         try {
             // dd($id);
             $this->storeService->deleteStore(request()->id);
+
+            $stores = $this->storeService->getAllStore();
+
+            $table = view('admin.store.table', compact('stores'))->render();
+            $pagination = $stores->links('vendor.pagination.custom')->render();
+
             session()->flash('success', 'Xóa thông tin khách hàng thànhc công');
-            return redirect()->back();
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa khách hàng thành công',
+                'table' => $table,
+                'pagination' => $pagination,
+            ]);
         } catch (\Exception $e) {
             Log::error('Failed to delete store profile: ' . $e->getMessage());
-            return ApiResponse::error('Failed to update store profile ', 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Xóa khách hàng thất bại'
+            ]);
         }
     }
     public function store(Request $request)

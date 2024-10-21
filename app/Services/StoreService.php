@@ -71,6 +71,7 @@ class StoreService
 
     public function deleteStore($id)
     {
+        DB::beginTransaction();
         try {
             // dd($id);
             Log::info("Deleting store");
@@ -142,6 +143,10 @@ class StoreService
                                     'payment' => $customer->source,
                                     'custom_field' => $customer->address,
                                     'product_name' => $data['product_name'] ?? '',
+                                    'payment' => 'Chuyển khoản ngân hàng',
+                                    'phone' => $data['phone'],
+                                    'payment_status' => 'Chuyển khoản thành công',
+                                    'customer_name' => $data['name'] ?? ''
                                 ]
                             ]
                         ]);

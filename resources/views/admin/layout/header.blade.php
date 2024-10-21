@@ -13,7 +13,7 @@
                     <i class="gg-menu-left"></i>
                 </button>
             </div>
-            <button class="topbar-toggler more">
+            <button class="topbar-toggler more" id="toggleButton">
                 <i class="gg-more-vertical-alt"></i>
             </button>
         </div>
@@ -21,7 +21,7 @@
     </div>
     <!-- Navbar Header -->
     <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
-        <div class="container-fluid">
+        <div class="container-fluid d-block d-md-flex" id="dropdownContent">
             <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
 
                 <li class="nav-item topbar-user dropdown hidden-caret show-on-mobile">
@@ -197,7 +197,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addClientModalLabel">Thêm khách hàng</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="client_close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -231,7 +231,7 @@
                     </div>
                     <div class="form-group">
                         <label for="product_id">Chọn sản phẩm</label>
-                        <select class="form-control" id="product_id" name="product_id" required>
+                        <select class="form-control" id="product_id" name="product_id">
                             <option value="">Chọn sản phẩm</option>
                             @foreach ($products as $product)
                                 <option value="{{ $product->id }}">{{ $product->name }}</option>
